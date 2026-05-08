@@ -1,0 +1,221 @@
+const ROLES = {
+  // ── Мафия ──────────────────────────────────────────────────────────────────
+  MAFIA: {
+    name: 'Мафиози',
+    emoji: '🔫',
+    team: 'mafia',
+    description: 'Ночью выбирает жертву вместе с командой. Побеждает когда мафия ≥ мирных.',
+    nightAction: true,
+    actionLabel: 'Убить',
+  },
+  GODFATHER: {
+    name: 'Дон Мафии',
+    emoji: '🎩',
+    team: 'mafia',
+    description: 'Лидер мафии. При проверке Шерифом выглядит как мирный. Его голос решающий.',
+    nightAction: true,
+    actionLabel: 'Убить',
+    appearsInnocent: true,
+  },
+  YAKUZA: {
+    name: 'Якудза',
+    emoji: '⚔️',
+    team: 'mafia',
+    description: 'Мафиози. Если ночью на него напала другая роль — контратакует и убивает нападавшего.',
+    nightAction: true,
+    actionLabel: 'Убить',
+    counterattack: true,
+  },
+
+  // ── Мирные ─────────────────────────────────────────────────────────────────
+  CIVILIAN: {
+    name: 'Мирный житель',
+    emoji: '👤',
+    team: 'town',
+    description: 'Нет ночного действия. Участвует в дневных голосованиях.',
+    nightAction: false,
+  },
+  SHERIFF: {
+    name: 'Шериф',
+    emoji: '🔍',
+    team: 'town',
+    description: 'Ночью проверяет одного игрока — узнаёт, мафия это или нет.',
+    nightAction: true,
+    actionLabel: 'Проверить',
+  },
+  DOCTOR: {
+    name: 'Доктор',
+    emoji: '💊',
+    team: 'town',
+    description: 'Ночью лечит одного игрока (в том числе себя раз за игру). Спасает от убийства.',
+    nightAction: true,
+    actionLabel: 'Вылечить',
+    canSelfHeal: true,
+    selfHealUsed: false,
+  },
+  DETECTIVE: {
+    name: 'Детектив',
+    emoji: '🕵️',
+    team: 'town',
+    description: 'Ночью выбирает двух игроков — узнаёт, в одной ли они команде.',
+    nightAction: true,
+    actionLabel: 'Сравнить',
+    needsTwoTargets: true,
+  },
+  BODYGUARD: {
+    name: 'Телохранитель',
+    emoji: '🛡️',
+    team: 'town',
+    description: 'Ночью охраняет игрока. Если на подопечного нападают — погибает сам, убивая нападавшего.',
+    nightAction: true,
+    actionLabel: 'Охранять',
+  },
+  VIGILANTE: {
+    name: 'Бдительный',
+    emoji: '🏹',
+    team: 'town',
+    description: 'Ночью может убить одного игрока (1 раз за игру). Если убивает мирного — умирает от вины.',
+    nightAction: true,
+    actionLabel: 'Застрелить',
+    usesLeft: 1,
+  },
+  MAYOR: {
+    name: 'Мэр',
+    emoji: '🏛️',
+    team: 'town',
+    description: 'Может раскрыться — тогда его голос считается за 3. Но становится приоритетной целью мафии.',
+    nightAction: false,
+    canReveal: true,
+    revealed: false,
+    voteWeight: 1,
+  },
+  ESCORT: {
+    name: 'Эскорт',
+    emoji: '💃',
+    team: 'town',
+    description: 'Ночью отвлекает игрока — блокирует его ночное действие на эту ночь.',
+    nightAction: true,
+    actionLabel: 'Отвлечь',
+  },
+  MEDIUM: {
+    name: 'Медиум',
+    emoji: '🔮',
+    team: 'town',
+    description: 'Раз в игру ночью может "поговорить" с одним мёртвым игроком и узнать его роль.',
+    nightAction: true,
+    actionLabel: 'Спросить мёртвого',
+    usesLeft: 1,
+  },
+  RETRIBUTIONIST: {
+    name: 'Мститель',
+    emoji: '⚡',
+    team: 'town',
+    description: 'Раз в игру ночью воскрешает мёртвого мирного — тот использует своё ночное действие ещё раз.',
+    nightAction: true,
+    actionLabel: 'Воскресить',
+    usesLeft: 1,
+  },
+  VETERAN: {
+    name: 'Ветеран',
+    emoji: '🪖',
+    team: 'town',
+    description: 'Может уйти "в засаду" (3 раза за игру). Любой, кто ночью посетит его — погибнет.',
+    nightAction: true,
+    actionLabel: 'Уйти в засаду',
+    alertsLeft: 3,
+    onAlert: false,
+  },
+  INVESTIGATOR: {
+    name: 'Следователь',
+    emoji: '📋',
+    team: 'town',
+    description: 'Ночью получает подсказки о роли игрока (несколько возможных ролей, но не точную).',
+    nightAction: true,
+    actionLabel: 'Исследовать',
+  },
+
+  // ── Нейтралы ────────────────────────────────────────────────────────────────
+  JESTER: {
+    name: 'Шут',
+    emoji: '🃏',
+    team: 'neutral',
+    description: 'Цель — быть казнённым днём голосованием. Если это случится — Шут побеждает!',
+    nightAction: false,
+    winCondition: 'lynched',
+  },
+  EXECUTIONER: {
+    name: 'Палач',
+    emoji: '⚖️',
+    team: 'neutral',
+    description: 'Должен добиться казни своей цели (случайного мирного). Если цель умирает ночью — становится Шутом.',
+    nightAction: false,
+    winCondition: 'execute_target',
+    target: null,
+  },
+  ARSONIST: {
+    name: 'Поджигатель',
+    emoji: '🔥',
+    team: 'neutral',
+    description: 'Ночью поливает игрока бензином или поджигает всех облитых. Побеждает в одиночку.',
+    nightAction: true,
+    actionLabel: 'Полить/Поджечь',
+    doused: [],
+    winCondition: 'last_standing',
+  },
+  SERIALKILLER: {
+    name: 'Серийный убийца',
+    emoji: '🔪',
+    team: 'neutral',
+    description: 'Каждую ночь убивает одного игрока. Иммунитет к мафии. Побеждает в одиночку.',
+    nightAction: true,
+    actionLabel: 'Убить',
+    winCondition: 'last_standing',
+    immune: true,
+  },
+  WITCH: {
+    name: 'Ведьма',
+    emoji: '🧙',
+    team: 'neutral',
+    description: 'Ночью берёт контроль над игроком и направляет его способность на другую цель.',
+    nightAction: true,
+    actionLabel: 'Контролировать',
+    winCondition: 'survive',
+    needsTwoTargets: true,
+  },
+  AMNESIAC: {
+    name: 'Амнезиак',
+    emoji: '🌀',
+    team: 'neutral',
+    description: 'Помнит чужую роль (из мёртвых) и становится ею. До этого — простой мирный.',
+    nightAction: true,
+    actionLabel: 'Вспомнить роль',
+    winCondition: 'based_on_role',
+    roleChosen: false,
+  },
+};
+
+// Минимальное количество игроков для каждой роли
+const ROLE_DISTRIBUTION = {
+  5:  ['MAFIA', 'SHERIFF', 'DOCTOR', 'CIVILIAN', 'CIVILIAN'],
+  6:  ['MAFIA', 'MAFIA', 'SHERIFF', 'DOCTOR', 'CIVILIAN', 'CIVILIAN'],
+  7:  ['MAFIA', 'MAFIA', 'SHERIFF', 'DOCTOR', 'DETECTIVE', 'CIVILIAN', 'CIVILIAN'],
+  8:  ['MAFIA', 'MAFIA', 'GODFATHER', 'SHERIFF', 'DOCTOR', 'DETECTIVE', 'CIVILIAN', 'CIVILIAN'],
+  9:  ['MAFIA', 'MAFIA', 'GODFATHER', 'SHERIFF', 'DOCTOR', 'DETECTIVE', 'BODYGUARD', 'CIVILIAN', 'JESTER'],
+  10: ['MAFIA', 'MAFIA', 'GODFATHER', 'SHERIFF', 'DOCTOR', 'DETECTIVE', 'BODYGUARD', 'ESCORT', 'CIVILIAN', 'JESTER'],
+  11: ['MAFIA', 'MAFIA', 'GODFATHER', 'YAKUZA', 'SHERIFF', 'DOCTOR', 'DETECTIVE', 'BODYGUARD', 'ESCORT', 'VETERAN', 'JESTER'],
+  12: ['MAFIA', 'MAFIA', 'GODFATHER', 'YAKUZA', 'SHERIFF', 'DOCTOR', 'DETECTIVE', 'BODYGUARD', 'ESCORT', 'VETERAN', 'VIGILANTE', 'JESTER'],
+  13: ['MAFIA', 'MAFIA', 'GODFATHER', 'YAKUZA', 'SHERIFF', 'DOCTOR', 'DETECTIVE', 'BODYGUARD', 'ESCORT', 'VETERAN', 'VIGILANTE', 'MEDIUM', 'JESTER'],
+  14: ['MAFIA', 'MAFIA', 'GODFATHER', 'YAKUZA', 'SHERIFF', 'DOCTOR', 'DETECTIVE', 'BODYGUARD', 'ESCORT', 'VETERAN', 'VIGILANTE', 'MEDIUM', 'MAYOR', 'EXECUTIONER'],
+  15: ['MAFIA', 'MAFIA', 'MAFIA', 'GODFATHER', 'YAKUZA', 'SHERIFF', 'DOCTOR', 'DETECTIVE', 'BODYGUARD', 'ESCORT', 'VETERAN', 'VIGILANTE', 'MEDIUM', 'MAYOR', 'SERIALKILLER'],
+};
+
+function getRoleDistribution(playerCount) {
+  if (playerCount >= 15) return ROLE_DISTRIBUTION[15];
+  if (ROLE_DISTRIBUTION[playerCount]) return ROLE_DISTRIBUTION[playerCount];
+  // fallback
+  const base = ['MAFIA', 'SHERIFF', 'DOCTOR'];
+  while (base.length < playerCount) base.push('CIVILIAN');
+  return base;
+}
+
+module.exports = { ROLES, getRoleDistribution };

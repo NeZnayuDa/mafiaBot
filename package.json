@@ -1,0 +1,16 @@
+{
+  "name": "mafia-telegram-bot",
+  "version": "1.0.0",
+  "description": "Telegram Mafia Bot with full role set",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "node-telegram-bot-api": "^0.66.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  }
+}
